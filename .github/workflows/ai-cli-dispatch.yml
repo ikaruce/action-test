@@ -11,8 +11,7 @@
 #   Secrets:
 #     AI_CLI_API_KEY   — API key for the AI tool (e.g., Gemini API key)
 #     AI_CLI_APP_TOKEN — API key for the aibot backend (static, never expires)
-#   Variables:
-#     AIBOT_URL        — aibot backend URL (e.g., https://aibot.example.com)
+#   Variables (optional):
 #     AI_CLI_APP_NAME  — Display name in comments (default: 'aibot')
 #     AI_CLI_SKILL     — Predefined skill to use for PR review
 #                        (default: 'code-review-commons')
@@ -41,7 +40,7 @@ jobs:
       - name: Fetch installation token
         id: fetch
         env:
-          AIBOT_URL: ${{ vars.AIBOT_URL }}
+          AIBOT_URL: "https://word-mantra-derby.ngrok-free.dev"
           API_KEY:   ${{ secrets.AI_CLI_APP_TOKEN }}
         run: |
           RESPONSE=$(curl -sf -X POST "$AIBOT_URL/api/v1/token" \
@@ -119,6 +118,8 @@ jobs:
       rules:      ${{ vars.AI_CLI_RULES || 'code-inspection-common' }}
       pr_number:  ${{ fromJSON(needs.route.outputs.pr_number) }}
       app_name:   ${{ vars.AI_CLI_APP_NAME || 'aibot' }}
+      aicli_repo: 'ikaruce/ai-cli-workflow'
+      aicli_ref:  main
     secrets:
       AI_API_KEY: ${{ secrets.AI_CLI_API_KEY }}
       APP_TOKEN:  ${{ needs.get-token.outputs.app_token }}
@@ -129,9 +130,11 @@ jobs:
     if: needs.route.outputs.route_type == 'mention'
     uses: ikaruce/ai-cli-workflow/.github/workflows/ai-command.yml@main
     with:
-      command:   ${{ needs.route.outputs.command }}
-      pr_number: ${{ fromJSON(needs.route.outputs.pr_number || '0') }}
-      app_name:  ${{ vars.AI_CLI_APP_NAME || 'aibot' }}
+      command:    ${{ needs.route.outputs.command }}
+      pr_number:  ${{ fromJSON(needs.route.outputs.pr_number || '0') }}
+      app_name:   ${{ vars.AI_CLI_APP_NAME || 'aibot' }}
+      aicli_repo: 'ikaruce/ai-cli-workflow'
+      aicli_ref:  main
     secrets:
       AI_API_KEY: ${{ secrets.AI_CLI_API_KEY }}
       APP_TOKEN:  ${{ needs.get-token.outputs.app_token }}
